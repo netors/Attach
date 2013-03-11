@@ -19,13 +19,14 @@ App::uses('Attachment', 'Attach.Model');
 
 class UploadBehavior extends ModelBehavior
 {
-    
+
     /**
     * Imagine Github URL
-    * 
+    *
     * @var string
     */
     const IMAGINE_URL = 'https://github.com/avalanche123/Imagine';
+    const SUPPORT_MULTIPLE_FILES = true;
 
     /**
      * Set what are the multiple models
@@ -474,7 +475,8 @@ class UploadBehavior extends ModelBehavior
         }
 
         $file   = $model->generateName($type, $index);
-        $attach = $this->saveAttachment($model, $type, $file);
+        $userId = $uploadData['user_id'];
+        $attach = $this->saveAttachment($model, $type, $file, $userId);
 
         if (!empty($uploadData['tmp_name'])) {
 
@@ -489,7 +491,7 @@ class UploadBehavior extends ModelBehavior
                         sprintf('The file %s is not an image', $file)
                     );
                 }
-                
+
                 //generate thumbs
                 $this->createThumbs($model, $type, $file);
             }
@@ -549,7 +551,8 @@ class UploadBehavior extends ModelBehavior
     protected function saveAttachment(
         Model $model,
         $type,
-        $filename
+        $filename,
+        $userId
     ) {
         $className = 'Attachment'. Inflector::camelize($type);
 
@@ -572,10 +575,11 @@ class UploadBehavior extends ModelBehavior
                 'foreign_key' => $model->id,
                 'filename' => basename($filename),
                 'type' => $type,
+                'user_id' => $userId,
             ),
         );
 
-        if (!empty($attachment) && $attachment !== false) {
+        if (!empty($attachment) && $attachment !== false && !self::SUPPORT_MULTIPLE_FILES) {
             $this->deleteAllFiles($model, $attachment);
             $data[$className]['id'] = $attachment[$className]['id'];
         } else {
@@ -583,7 +587,7 @@ class UploadBehavior extends ModelBehavior
         }
 
         $model->data += $model->{$className}->save($data);
-        
+
     }
 
     /**
@@ -599,6 +603,7 @@ class UploadBehavior extends ModelBehavior
     public function generateName(Model $model, $type, $index = null)
     {
         $dir = $this->getUploadFolder($model, $type);
+        $date = new DateTime();
 
         if (is_null($index)) {
             $extension = $this->getFileExtension(
@@ -613,17 +618,19 @@ class UploadBehavior extends ModelBehavior
         }
 
         if (!is_null($index)) {
-            return $dir 
-                . $type 
-                . '_' 
-                . $index 
-                . '_' 
-                . $model->id 
-                . '.' 
+            return $dir
+                . $type
+                . '_'
+                . $index
+                . '_'
+                . $model->id
+                . '_'
+                . $date->getTimestamp()
+                . '.'
                 . $extension;
         }
 
-        return $dir . $type . '_' . $model->id  . '.' . $extension;
+        return $dir . $type . '_' . $model->id  . '_' . $date->getTimestamp() . '.' . $extension;
     }
 
     /**
