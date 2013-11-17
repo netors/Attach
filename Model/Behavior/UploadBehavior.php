@@ -478,8 +478,10 @@ class UploadBehavior extends ModelBehavior
         $userId = $uploadData['user_id'];
         $name = $uploadData['custom_name'];
         $description = $uploadData['description'];
-        $arrCustomData = array('user_id' => $userId, 'name' => $name, 'description' => $description);
-
+        $size = $uploadData['size'];
+        $mime_type = $uploadData['type'];
+        $original_filename = $uploadData['name'];
+        $arrCustomData = array('user_id' => $userId, 'name' => $name, 'original_filename' => $original_filename, 'description' => $description, 'size' => $size, 'mime_type'=> $mime_type);
         $attach = $this->saveAttachment($model, $type, $file, $arrCustomData);
 
         if (!empty($uploadData['tmp_name'])) {
@@ -578,10 +580,13 @@ class UploadBehavior extends ModelBehavior
                 'model' => $model->alias,
                 'foreign_key' => $model->id,
                 'filename' => basename($filename),
+                'original_filename' => $arrCustomData['original_filename'],
                 'type' => $type,
                 'user_id' => $arrCustomData['user_id'],
                 'name' => $arrCustomData['name'],
                 'description' => $arrCustomData['description'],
+                'size' => $arrCustomData['size'],
+                'mime_type' => $arrCustomData['mime_type'],
             ),
         );
 

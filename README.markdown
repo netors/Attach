@@ -1,3 +1,5 @@
+Update: added columns: original_filename, size and mime_type
+
 # Attach 1.0
 
 Attach is a CakePHP 2.0 Plugin, that make your upload a simple task!
@@ -142,9 +144,12 @@ Can be by SQL:
 CREATE TABLE  `attachments` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `filename` varchar(150) NOT NULL,
+  `original_filename` varchar(150) NOT NULL,
   `model` varchar(150) NOT NULL,
   `foreign_key` int(11) NOT NULL,
   `type` varchar(100) NOT NULL,
+  `size` int(11) NOT NULL,
+  `mime_type` varchar(100) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ```
